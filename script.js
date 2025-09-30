@@ -11,59 +11,87 @@ const smallerMins = document.getElementById('smaller-mins');
 const mediumMins = document.getElementById('medium-mins');
 const longMins = document.getElementById('long-mins');
 
-let meditationTime = 10; // Default time is 10 minutes
+let meditationTime = 10; // In minutes
+let timeLeftInSeconds = meditationTime * 60;
 let isPlaying = false;
+let timerInterval = null;
 
-const updateTimeDisplay = () => {
-    timeDisplay.textContent = `${meditationTime}:0`;
+// Format seconds into mm:ss
+const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
 };
 
-// Set time based on the selected button
-smallerMins.addEventListener('click', () => {
-    meditationTime = 2;
-    updateTimeDisplay();
-});
+// Update display
+const updateTimeDisplay = () => {
+    timeDisplay.textContent = formatTime(timeLeftInSeconds);
+};
 
-mediumMins.addEventListener('click', () => {
-    meditationTime = 5;
+// Set time from buttons
+const setTime = (mins) => {
+    meditationTime = mins;
+    timeLeftInSeconds = mins * 60;
     updateTimeDisplay();
-});
+    stopTimer(); // Reset if time changed while playing
+};
 
-longMins.addEventListener('click', () => {
-    meditationTime = 10;
-    updateTimeDisplay();
-});
+smallerMins.addEventListener('click', () => setTime(2));
+mediumMins.addEventListener('click', () => setTime(5));
+longMins.addEventListener('click', () => setTime(10));
 
-// Play/Pause button
+// Timer logic
+const startTimer = () => {
+    timerInterval = setInterval(() => {
+        if (timeLeftInSeconds > 0) {
+            timeLeftInSeconds--;
+            updateTimeDisplay();
+        } else {
+            stopTimer();
+        }
+    }, 1000);
+};
+
+const stopTimer = () => {
+    clearInterval(timerInterval);
+    isPlaying = false;
+    playPauseBtn.textContent = "Play";
+    videoElement.pause();
+    audioElement.pause();
+};
+
+// Play/Pause logic
 playPauseBtn.addEventListener('click', () => {
     if (isPlaying) {
-        videoElement.pause();
-        audioElement.pause();
-        playPauseBtn.textContent = "Play";
+        stopTimer();
     } else {
-        videoElement.play();
-        audioElement.play();
+        isPlaying = true;
         playPauseBtn.textContent = "Pause";
+        videoElement.play();
+        audioElement.play();
+        startTimer();
     }
-    isPlaying = !isPlaying;
 });
 
-// Switch to Beach sound
+// Sound switching logic
+const switchMedia = (audioSrc, videoSrc) => {
+    const wasPlaying = isPlaying;
+    audioElement.src = audioSrc;
+    videoElement.src = videoSrc;
+
+    if (wasPlaying) {
+        audioElement.play();
+        videoElement.play();
+    }
+};
+
 soundBeach.addEventListener('click', () => {
-    audioElement.src = "Sounds/beach.mp3";
-    videoElement.src = "video/beach.mp4";
-    if (isPlaying) {
-        audioElement.play();
-        videoElement.play();
-    }
+    switchMedia("Sounds/beach.mp3", "video/beach.mp4");
 });
 
-// Switch to Rain sound
 soundRain.addEventListener('click', () => {
-    audioElement.src = "Sounds/rain.mp3";
-    videoElement.src = "video/rain.mp4";
-    if (isPlaying) {
-        audioElement.play();
-        videoElement.play();
-    }
+    switchMedia("Sounds/rain.mp3", "video/rain.mp4");
 });
+
+// Initialize display
+updateTimeDisplay();
