@@ -1,43 +1,240 @@
 <!DOCTYPE html>
-
-<html>
-
+<html lang="en">
 <head>
-	<link rel="stylesheet" href="styles.css">
-</head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Meditation App</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: Arial, sans-serif;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: #000;
+      overflow: hidden;
+      color: white;
+    }
 
+    #app {
+      position: relative;
+      width: 100%;
+      height: 100%;
+    }
+
+    .vid-container video {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: -1;
+    }
+
+    .player-container {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      flex-direction: column;
+    }
+
+    .play {
+      cursor: pointer;
+      width: 120px;
+      height: 120px;
+      position: relative;
+    }
+
+    svg {
+      width: 100%;
+      height: 100%;
+    }
+
+    .time-display {
+      font-size: 2rem;
+      margin-top: 20px;
+    }
+
+    #time-select {
+      position: absolute;
+      left: 20px;
+      top: 20%;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    #time-select button {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+      padding: 10px 20px;
+      cursor: pointer;
+      font-size: 1rem;
+      border-radius: 5px;
+    }
+
+    .sound-picker {
+      position: absolute;
+      right: 20px;
+      top: 30%;
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .sound-picker button {
+      border: none;
+      border-radius: 50%;
+      width: 80px;
+      height: 80px;
+      cursor: pointer;
+      background: transparent;
+    }
+
+    .sound-picker img {
+      width: 100%;
+      height: 100%;
+    }
+
+    .outline {
+      stroke-dasharray: 565.48;
+      stroke-dashoffset: 0;
+      transition: stroke-dashoffset 1s linear;
+    }
+  </style>
+</head>
 <body>
-	<!-- the entire body must be written by student -->
-	<div id="app" class="app">
+  <div id="app" class="app">
+    <!-- Background video -->
     <div class="vid-container">
       <video id="video" loop muted>
-        <source src="Sounds/beach.mp4" type="video/mp4">
+        <source src="video/rain.mp4" type="video/mp4">
       </video>
     </div>
 
-    <div class="player-container">
-      <button class="play">▶</button>
+    <!-- Player -->
+    <div class="player-container" id="player-container">
+      <div class="play" id="play">
+        <!-- Circular track -->
+        <svg class="track" viewBox="0 0 200 200">
+          <circle cx="100" cy="100" r="90" stroke="white" stroke-width="4" fill="none"></circle>
+        </svg>
+        <!-- Moving outline -->
+        <svg class="moving-outline" viewBox="0 0 200 200">
+          <circle class="outline" cx="100" cy="100" r="90" stroke="white" stroke-width="4" fill="none"></circle>
+        </svg>
+        <!-- Play/Pause icon -->
+        <img id="play-icon" src="svg/play.svg" alt="Play" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:50px; height:50px;">
+      </div>
       <div class="time-display">10:0</div>
     </div>
 
-    <div id="time-select">
+    <!-- Time selection -->
+    <div id="time-select" class="time-select">
       <button id="smaller-mins">2 Minutes</button>
       <button id="medium-mins">5 Minutes</button>
       <button id="long-mins">10 Minutes</button>
     </div>
 
-    <div class="sound-picker">
-      <button class="beach">☀</button>
-      <button class="rain">🌧</button>
+    <!-- Sound picker -->
+    <div class="sound-picker" id="sound-picker">
+      <button class="beach"><img src="svg/beach.svg" alt="Beach"></button>
+      <button class="rain"><img src="svg/rain.svg" alt="Rain"></button>
     </div>
 
+    <!-- Audio -->
     <audio id="audio">
       <source src="Sounds/beach.mp3" type="audio/mp3">
     </audio>
   </div>
-    <script type="text/javascript" src="./script.js">
-</script>
 
+  <script>
+    const playBtn = document.querySelector(".play");
+    const playIcon = document.getElementById("play-icon");
+    const audio = document.getElementById("audio");
+    const video = document.getElementById("video");
+    const timeDisplay = document.querySelector(".time-display");
+    const timeButtons = document.querySelectorAll("#time-select button");
+    const soundButtons = document.querySelectorAll(".sound-picker button");
+    const outline = document.querySelector(".outline");
+
+    let duration = 600; // default 10 mins
+    let currentTime = duration;
+    let timer;
+    const outlineLength = outline.getTotalLength();
+    outline.style.strokeDasharray = outlineLength;
+    outline.style.strokeDashoffset = outlineLength;
+
+    function updateDisplay() {
+      let minutes = Math.floor(currentTime / 60);
+      let seconds = currentTime % 60;
+      timeDisplay.textContent = `${minutes}:${seconds}`;
+    }
+
+    function resetPlayer() {
+      clearInterval(timer);
+      audio.pause();
+      video.pause();
+      currentTime = duration;
+      updateDisplay();
+      outline.style.strokeDashoffset = outlineLength;
+      playIcon.src = "svg/play.svg";
+    }
+
+    playBtn.addEventListener("click", () => {
+      if (audio.paused) {
+        audio.play();
+        video.play();
+        playIcon.src = "svg/pause.svg";
+        timer = setInterval(() => {
+          if (currentTime > 0) {
+            currentTime--;
+            updateDisplay();
+            outline.style.strokeDashoffset = outlineLength - (currentTime / duration) * outlineLength;
+          } else {
+            resetPlayer();
+            playIcon.src = "svg/replay.svg";
+          }
+        }, 1000);
+      } else {
+        resetPlayer();
+      }
+    });
+
+    timeButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.id === "smaller-mins") duration = 120;
+        if (btn.id === "medium-mins") duration = 300;
+        if (btn.id === "long-mins") duration = 600;
+        currentTime = duration;
+        updateDisplay();
+        outline.style.strokeDashoffset = outlineLength;
+      });
+    });
+
+    soundButtons.forEach(btn => {
+      btn.addEventListener("click", () => {
+        if (btn.classList.contains("beach")) {
+          audio.src = "sounds/beach.mp3";
+          video.src = "video/beach.mp4";
+        } else if (btn.classList.contains("rain")) {
+          audio.src = "sounds/rain.mp3";
+          video.src = "video/rain.mp4";
+        }
+        audio.load();
+        video.load();
+        if (!audio.paused) {
+          audio.play();
+          video.play();
+        }
+      });
+    });
+
+    updateDisplay();
+  </script>
 </body>
-
 </html>
