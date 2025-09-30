@@ -1,97 +1,75 @@
 //your JS code here. If required.
-const playPauseBtn = document.getElementById('play-pause-btn');
-const videoElement = document.getElementById('meditation-video');
-const audioElement = document.getElementById('meditation-audio');
-const timeDisplay = document.getElementById('time-display');
+const playBtn = document.querySelector(".play");
+const audio = document.getElementById("audio");
+const video = document.getElementById("video");
+const timeDisplay = document.querySelector(".time-display");
+const timeButtons = document.querySelectorAll("#time-select button");
+const soundButtons = document.querySelectorAll(".sound-picker button");
 
-const soundBeach = document.getElementById('sound-beach');
-const soundRain = document.getElementById('sound-rain');
+let duration = 600; // default 10 mins
+let currentTime = duration;
+let timer;
 
-const smallerMins = document.getElementById('smaller-mins');
-const mediumMins = document.getElementById('medium-mins');
-const longMins = document.getElementById('long-mins');
+// Update time display
+function updateDisplay() {
+  let minutes = Math.floor(currentTime / 60);
+  let seconds = currentTime % 60;
+  timeDisplay.textContent = `${minutes}:${seconds}`;
+}
 
-let meditationTime = 10; // In minutes
-let timeLeftInSeconds = meditationTime * 60;
-let isPlaying = false;
-let timerInterval = null;
-
-// Format seconds into mm:ss
-const formatTime = (seconds) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-};
-
-// Update display
-const updateTimeDisplay = () => {
-    timeDisplay.textContent = formatTime(timeLeftInSeconds);
-};
-
-// Set time from buttons
-const setTime = (mins) => {
-    meditationTime = mins;
-    timeLeftInSeconds = mins * 60;
-    updateTimeDisplay();
-    stopTimer(); // Reset if time changed while playing
-};
-
-smallerMins.addEventListener('click', () => setTime(2));
-mediumMins.addEventListener('click', () => setTime(5));
-longMins.addEventListener('click', () => setTime(10));
-
-// Timer logic
-const startTimer = () => {
-    timerInterval = setInterval(() => {
-        if (timeLeftInSeconds > 0) {
-            timeLeftInSeconds--;
-            updateTimeDisplay();
-        } else {
-            stopTimer();
-        }
-    }, 1000);
-};
-
-const stopTimer = () => {
-    clearInterval(timerInterval);
-    isPlaying = false;
-    playPauseBtn.textContent = "Play";
-    videoElement.pause();
-    audioElement.pause();
-};
-
-// Play/Pause logic
-playPauseBtn.addEventListener('click', () => {
-    if (isPlaying) {
-        stopTimer();
-    } else {
-        isPlaying = true;
-        playPauseBtn.textContent = "Pause";
-        videoElement.play();
-        audioElement.play();
-        startTimer();
-    }
+// Play/Pause handler
+playBtn.addEventListener("click", () => {
+  if (audio.paused) {
+	audio.play();
+	video.play();
+	playBtn.textContent = "⏸";
+	timer = setInterval(() => {
+	  if (currentTime > 0) {
+		currentTime--;
+		updateDisplay();
+	  } else {
+		clearInterval(timer);
+		audio.pause();
+		video.pause();
+		playBtn.textContent = "▶";
+	  }
+	}, 1000);
+  } else {
+	audio.pause();
+	video.pause();
+	playBtn.textContent = "▶";
+	clearInterval(timer);
+  }
 });
 
-// Sound switching logic
-const switchMedia = (audioSrc, videoSrc) => {
-    const wasPlaying = isPlaying;
-    audioElement.src = audioSrc;
-    videoElement.src = videoSrc;
-
-    if (wasPlaying) {
-        audioElement.play();
-        videoElement.play();
-    }
-};
-
-soundBeach.addEventListener('click', () => {
-    switchMedia("sounds/beach.mp3", "video/beach.mp4");
+// Time selection
+timeButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+	if (btn.id === "smaller-mins") duration = 120;
+	if (btn.id === "medium-mins") duration = 300;
+	if (btn.id === "long-mins") duration = 600;
+	currentTime = duration;
+	updateDisplay();
+  });
 });
 
-soundRain.addEventListener('click', () => {
-    switchMedia("sounds/rain.mp3", "video/rain.mp4");
+// Sound selection
+soundButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+	if (btn.classList.contains("beach")) {
+	  audio.src = "sounds/beach.mp3";
+	  video.src = "sounds/beach.mp4";
+	} else if (btn.classList.contains("rain")) {
+	  audio.src = "sounds/rain.mp3";
+	  video.src = "sounds/rain.mp4";
+	}
+	audio.load();
+	video.load();
+	if (!audio.paused) {
+	  audio.play();
+	  video.play();
+	}
+  });
 });
 
-// Initialize display
-updateTimeDisplay();
+updateDisplay();
