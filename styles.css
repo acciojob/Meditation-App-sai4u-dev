@@ -1,1 +1,91 @@
 /*  your css code here. If applicable */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #FFFFFF;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+#app {
+    text-align: center;
+    width: 70%;
+}
+
+.vid-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+    margin-bottom: 20px;
+}
+
+video {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+
+.player-container {
+    margin-bottom: 20px;
+}
+
+.sound-picker {
+    margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	position: absolute;
+	row-gap: 6vmin;
+	top: 30%;
+	right: 10%
+}
+
+.sound-picker button {
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    background-color: #FFFFFF;
+    color: white;
+    border: none;
+}
+
+.time-select {
+    margin-bottom: 20px;
+	display: flex;
+	flex-direction: column;
+	width: 120px;
+	gap:40px;
+	position: absolute;
+	top:30%;
+	left: 20px;
+}
+
+.time-select button {
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+    background: rgba(115, 255, 0, 0);
+    color: black;
+    border: 2px solid black;
+    border-radius: 10px;
+}
+
+.time-display {
+    font-size: 2rem;
+    margin-bottom: 20px;
+}
+
+.play {
+    padding: 15px 30px;
+    background-color: #FF5722;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
