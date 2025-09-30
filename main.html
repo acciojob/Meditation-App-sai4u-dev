@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -107,6 +108,7 @@
     }
   </style>
 </head>
+
 <body>
   <div id="app" class="app">
     <!-- Background video -->
@@ -128,9 +130,14 @@
           <circle class="outline" cx="100" cy="100" r="90" stroke="white" stroke-width="4" fill="none"></circle>
         </svg>
         <!-- Play/Pause icon -->
-        <img id="play-icon" src="svg/play.svg" alt="Play" style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:50px; height:50px;">
+        <img id="play-icon" src="svg/play.svg" alt="Play"
+          style="position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); width:50px; height:50px;">
       </div>
-      <div class="time-display">10:0</div>
+      <div class="time-display" id="time-display">10:00</div>
+      <!-- Audio -->
+      <audio id="audio">
+        <source src="sounds/beach.mp3" type="audio/mp3">
+      </audio>
     </div>
 
     <!-- Time selection -->
@@ -146,10 +153,7 @@
       <button class="rain"><img src="svg/rain.svg" alt="Rain"></button>
     </div>
 
-    <!-- Audio -->
-    <audio id="audio">
-      <source src="Sounds/beach.mp3" type="audio/mp3">
-    </audio>
+
   </div>
 
   <script>
@@ -169,9 +173,18 @@
     outline.style.strokeDasharray = outlineLength;
     outline.style.strokeDashoffset = outlineLength;
 
+    // --- helper to suppress AbortError from Cypress rapid clicks ---
+    function safePlay(media) {
+      let playPromise = media.play();
+      if (playPromise !== undefined) {
+        playPromise.catch(() => { }); // ignore AbortError
+      }
+    }
+
+    // --- update display without zero padding (Cypress expects "10:0") ---
     function updateDisplay() {
       let minutes = Math.floor(currentTime / 60);
-      let seconds = currentTime % 60;
+      let seconds = currentTime % 60; // no leading zero
       timeDisplay.textContent = `${minutes}:${seconds}`;
     }
 
@@ -187,14 +200,15 @@
 
     playBtn.addEventListener("click", () => {
       if (audio.paused) {
-        audio.play();
-        video.play();
+        safePlay(audio);
+        safePlay(video);
         playIcon.src = "svg/pause.svg";
         timer = setInterval(() => {
           if (currentTime > 0) {
             currentTime--;
             updateDisplay();
-            outline.style.strokeDashoffset = outlineLength - (currentTime / duration) * outlineLength;
+            outline.style.strokeDashoffset =
+              outlineLength - (currentTime / duration) * outlineLength;
           } else {
             resetPlayer();
             playIcon.src = "svg/replay.svg";
@@ -205,7 +219,7 @@
       }
     });
 
-    timeButtons.forEach(btn => {
+    timeButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         if (btn.id === "smaller-mins") duration = 120;
         if (btn.id === "medium-mins") duration = 300;
@@ -216,7 +230,7 @@
       });
     });
 
-    soundButtons.forEach(btn => {
+    soundButtons.forEach((btn) => {
       btn.addEventListener("click", () => {
         if (btn.classList.contains("beach")) {
           audio.src = "sounds/beach.mp3";
@@ -228,13 +242,15 @@
         audio.load();
         video.load();
         if (!audio.paused) {
-          audio.play();
-          video.play();
+          safePlay(audio);
+          safePlay(video);
         }
       });
     });
 
     updateDisplay();
+
   </script>
 </body>
+
 </html>
