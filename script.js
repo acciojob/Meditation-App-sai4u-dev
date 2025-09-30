@@ -86,11 +86,11 @@ const switchMedia = (audioSrc, videoSrc) => {
 };
 
 soundBeach.addEventListener('click', () => {
-    switchMedia("Sounds/beach.mp3", "video/beach.mp4");
+    switchMedia("sounds/beach.mp3", "video/beach.mp4");
 });
 
 soundRain.addEventListener('click', () => {
-    switchMedia("Sounds/rain.mp3", "video/rain.mp4");
+    switchMedia("sounds/rain.mp3", "video/rain.mp4");
 });
 
 // Initialize display
